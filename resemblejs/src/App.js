@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import resemblejs from "resemblejs";
+import compareImages from "resemblejs/compareImages";
 
 export default function App() {
   const [originData, setOriginData] = useState(null); // null | { file : File, src : string}
@@ -29,28 +29,28 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (originData !== null && compareData !== null) {
-      resemblejs(originData.file)
-        .outputSettings({
-          errorColor: {
-            red: 255,
-            green: 0,
-            blue: 255,
+    (async () => {
+      if (originData !== null && compareData !== null) {
+        const result = await compareImages(originData.file, compareData.file, {
+          output: {
+            errorColor: {
+              red: 255,
+              green: 0,
+              blue: 255,
+            },
           },
-        })
-        .compareTo(compareData.file)
-        .ignoreAntialiasing()
-        .scaleToSameSize()
-        .onComplete((data) => {
-          console.log(data);
-          setResultData({
-            misMatchPercentage: data.misMatchPercentage,
-            src: data.getImageDataUrl(),
-          });
+          scaleToSameSize: true,
+          ignore: "antialiasing",
         });
-    } else {
+        console.log(result);
+        setResultData({
+          misMatchPercentage: result.misMatchPercentage,
+          src: result.getImageDataUrl(),
+        });
+        return;
+      }
       setResultData(null);
-    }
+    })();
   }, [originData, compareData]);
 
   return (
